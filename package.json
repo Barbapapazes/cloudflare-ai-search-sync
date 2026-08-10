@@ -1,0 +1,55 @@
+{
+  "name": "vite-plugin-cloudflare-ai-search-sync",
+  "type": "module",
+  "version": "0.0.0",
+  "packageManager": "pnpm@11.21.0",
+  "description": "Synchronize Markdown files to Cloudflare AI Search automatically.",
+  "author": "Estéban Soubiran <esteban@soubiran.dev>",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/Barbapapazes",
+  "homepage": "https://github.com/Barbapapazes/vite-plugin-cloudflare-ai-search-sync#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Barbapapazes/vite-plugin-cloudflare-ai-search-sync.git"
+  },
+  "bugs": "https://github.com/Barbapapazes/vite-plugin-cloudflare-ai-search-sync/issues",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "24"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsdown",
+    "prepack": "pnpm run build",
+    "release": "bumpp --sign"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.3.0",
+    "@tsconfig/node24": "^24.0.4",
+    "@types/node": "^24.13.3",
+    "bumpp": "^12.2.0",
+    "changelogithub": "^15.0.4",
+    "eslint": "^10.8.1",
+    "taze": "^20.0.0",
+    "tsdown": "^0.22.14",
+    "typescript": "~6.0.3",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10"
+  }
+}
