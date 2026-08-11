@@ -17,6 +17,10 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./vitepress": {
+      "types": "./dist/vitepress.d.mts",
+      "import": "./dist/vitepress.mjs"
     }
   },
   "main": "dist/index.mjs",
@@ -38,6 +42,9 @@
   },
   "peerDependencies": {
     "vite": ">=5.0.0"
+  },
+  "dependencies": {
+    "cloudflare": "^7.0.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.3.0",

@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      cloudflare:
+        specifier: ^7.0.0
+        version: 7.0.0
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^9.3.0
@@ -53,6 +57,9 @@ importers:
       vitepress:
         specifier: next
         version: 2.0.0-alpha.19(@types/node@24.13.3)(change-case@5.4.4)(jiti@2.7.0)(postcss@8.5.26)(typescript@6.0.3)(yaml@2.9.0)
+      vitepress-plugin-cloudflare-ai-search:
+        specifier: ^0.0.1
+        version: 0.0.1(vite@8.2.1(@types/node@24.13.3)(jiti@2.7.0)(yaml@2.9.0))(vitepress@2.0.0-alpha.19(@types/node@24.13.3)(change-case@5.4.4)(jiti@2.7.0)(postcss@8.5.26)(typescript@6.0.3)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
 
 packages:
 
@@ -152,6 +159,10 @@ packages:
   '@clack/prompts@1.7.0':
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
+
+  '@cloudflare/ai-search-snippet@0.0.43':
+    resolution: {integrity: sha512-NWT/0wULeX1YLQRDFm6rs8NAJz4YDYWbED628F0GpXF1w5PT09glR4CilIdGiovL9jflGneCD7/uLTrxWMkerQ==}
+    engines: {node: '>=16.0.0'}
 
   '@docsearch/css@4.7.0':
     resolution: {integrity: sha512-Sk5xkdRFeE7PeWjG9l4AfTwdvMfr9wHiwNNCpHXT4v4SNyNMKdHGvEILc31BgaVFGDDNbv5u/a73tofRiwbEZw==}
@@ -966,6 +977,10 @@ packages:
 
   citty@0.1.6:
     resolution: {integrity: sha512-tskPPKEs8D2KPafUypv2gxwJP8h/OaJmC82QQGGDQcHvXX43xF2VDACcJVmZ0EuSxkpO9Kc4MlrA3q0+FG58AQ==}
+
+  cloudflare@7.0.0:
+    resolution: {integrity: sha512-ZU8Yp1biaRRf+i1Hlap/VUwSBeKnOa4kkygIU9naE07JILnHdgLr9Wq/iPEeEf2in0N5m1giTp1ohY+cNQZEGQ==}
+    hasBin: true
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -2380,6 +2395,14 @@ packages:
       yaml:
         optional: true
 
+  vitepress-plugin-cloudflare-ai-search@0.0.1:
+    resolution: {integrity: sha512-yMfJFGtXgwGHnWv7MtjtfkwfslyNDjG7iEDzKc5HoWaA8IS6/TL5y8XaRm4kMmwXyJNqQXQn2Su2tPfMzE8Z9w==}
+    engines: {node: '24'}
+    peerDependencies:
+      vite: '>=5.0.0'
+      vitepress: ^1.6.4 || ^2.0.0-0
+      vue: ^3.2.25
+
   vitepress@2.0.0-alpha.19:
     resolution: {integrity: sha512-WnBsb0Bwr43kXKyiis+lld/7ri3hnMbthS8N3hpFtjjwsdLO4IRmiAE08D7aud4q6oMDf9uwRowxzNqRFe/amw==}
     hasBin: true
@@ -2588,6 +2611,8 @@ snapshots:
       fast-string-width: 3.0.2
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
+
+  '@cloudflare/ai-search-snippet@0.0.43': {}
 
   '@docsearch/css@4.7.0': {}
 
@@ -3362,6 +3387,8 @@ snapshots:
   citty@0.1.6:
     dependencies:
       consola: 3.4.2
+
+  cloudflare@7.0.0: {}
 
   colorette@2.0.20: {}
 
@@ -4901,6 +4928,13 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.7.0
       yaml: 2.9.0
+
+  vitepress-plugin-cloudflare-ai-search@0.0.1(vite@8.2.1(@types/node@24.13.3)(jiti@2.7.0)(yaml@2.9.0))(vitepress@2.0.0-alpha.19(@types/node@24.13.3)(change-case@5.4.4)(jiti@2.7.0)(postcss@8.5.26)(typescript@6.0.3)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)):
+    dependencies:
+      '@cloudflare/ai-search-snippet': 0.0.43
+      vite: 8.2.1(@types/node@24.13.3)(jiti@2.7.0)(yaml@2.9.0)
+      vitepress: 2.0.0-alpha.19(@types/node@24.13.3)(change-case@5.4.4)(jiti@2.7.0)(postcss@8.5.26)(typescript@6.0.3)(yaml@2.9.0)
+      vue: 3.5.41(typescript@6.0.3)
 
   vitepress@2.0.0-alpha.19(@types/node@24.13.3)(change-case@5.4.4)(jiti@2.7.0)(postcss@8.5.26)(typescript@6.0.3)(yaml@2.9.0):
     dependencies:

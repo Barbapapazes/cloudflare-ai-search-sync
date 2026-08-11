@@ -1,3 +1,10 @@
+allowBuilds:
+  esbuild: false
+  workerd: false
+
+minimumReleaseAgeExclude:
+  - vitepress-plugin-cloudflare-ai-search@0.0.1
+
 shellEmulator: true
 
 trustPolicy: no-downgrade
@@ -5,7 +12,3 @@ trustPolicy: no-downgrade
 packages:
   - .
   - .playgrounds/*
-
-allowBuilds:
-  esbuild: false
-  workerd: false
