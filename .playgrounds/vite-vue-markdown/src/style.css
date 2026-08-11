@@ -1,0 +1,28 @@
+:root {
+  color: #1f2937;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+header,
+main {
+  margin: auto;
+  max-width: 48rem;
+  padding: 1rem;
+}
+
+header {
+  display: flex;
+  gap: 1rem;
+}
+
+main {
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+}

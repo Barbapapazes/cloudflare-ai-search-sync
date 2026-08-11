@@ -1,6 +1,6 @@
 # vite-plugin-cloudflare-ai-search-sync
 
-A Vite plugin that synchronizes Markdown files to Cloudflare AI Search and configures the metadata schema required to use result icons with the [AI Search snippet](https://github.com/cloudflare/ai-search-snippet).
+A Vite plugin that synchronizes Markdown files to Cloudflare AI Search and configures the metadata schema required to use result links and icons with the [AI Search snippet](https://github.com/cloudflare/ai-search-snippet). A VitePress `buildEnd` hook is also available.
 
 ## Installation
 
@@ -10,7 +10,7 @@ pnpm add vite-plugin-cloudflare-ai-search-sync
 
 ## Configuration
 
-The plugin runs only for `vite build --mode production`. It does not contact Cloudflare while developing or for builds with another mode.
+The plugin runs at the end of successful Vite builds only. It does not contact Cloudflare while developing or after a failed build.
 
 Configure credentials in a local `.env` file or through your CI environment:
 
@@ -21,25 +21,44 @@ CLOUDFLARE_AI_SEARCH_INSTANCE_ID=
 CLOUDFLARE_AI_SEARCH_NAMESPACE=
 ```
 
-Alternatively, pass them directly as plugin options. Explicit options take precedence over environment variables.
+Vite loads these variables using its resolved mode and environment directory. Alternatively, pass them directly as plugin options. Explicit options take precedence over environment variables.
+
+### Vite filesystem adapter
+
+Configure the standard Vite plugin with the Markdown source folder. Relative folders are resolved from the Vite project root.
 
 ```ts
 import { defineConfig } from 'vite'
 import { cloudflareAISearchSync } from 'vite-plugin-cloudflare-ai-search-sync'
-import { vitepressSource } from 'vite-plugin-cloudflare-ai-search-sync/vitepress'
 
 export default defineConfig({
-  plugins: [cloudflareAISearchSync({
-    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
-    apiToken: process.env.CLOUDFLARE_API_TOKEN,
-    instanceId: process.env.CLOUDFLARE_AI_SEARCH_INSTANCE_ID,
-    namespace: process.env.CLOUDFLARE_AI_SEARCH_NAMESPACE,
-    source: vitepressSource(),
-  })],
+  plugins: [
+    cloudflareAISearchSync({ folder: './docs' }),
+  ],
 })
 ```
 
-For VitePress, use the native `buildEnd` hook. It resolves the public routes, including `base`, rewrites, and `cleanUrls`, before uploading them:
+The adapter scans the folder recursively and indexes regular `.md` files only. Files retain their paths as AI Search keys, so `guide/page.md` remains `guide/page.md`. It generates VitePress-compatible URLs using Vite's resolved `base` by default:
+
+- `index.md` → `/`
+- `guide/index.md` → `/guide/`
+- `guide/page.md` → `/guide/page.html`
+
+Set `cleanUrls: true` to omit `.html` from non-index routes, or set `base` to override Vite's resolved base:
+
+```ts
+cloudflareAISearchSync({
+  base: '/docs/',
+  cleanUrls: true,
+  folder: './content',
+})
+```
+
+Unlike the VitePress hook, this adapter indexes the source folder's root `index.md`.
+
+### VitePress adapter
+
+Use the native VitePress `buildEnd` hook. It resolves public routes, including `base`, rewrites, and `cleanUrls`, before uploading them:
 
 ```ts
 import { cloudflareAISearchSync } from 'vite-plugin-cloudflare-ai-search-sync/vitepress'
@@ -50,6 +69,24 @@ export default defineConfig({
 })
 ```
 
+### Nuxt Content adapter
+
+Nuxt 4 and Nuxt Content v3 applications can register the dedicated module. It synchronizes only during `nuxt build` and `nuxt generate`; `nuxt dev` does not read credentials or contact Cloudflare.
+
+```ts
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/content',
+    'vite-plugin-cloudflare-ai-search-sync/nuxt',
+  ],
+  cloudflareAISearchSync: {},
+})
+```
+
+The module indexes published Markdown documents from Nuxt Content `page` collections only. It uploads the parser-input Markdown, uses the source path relative to the Nuxt project root as the key, and uses Nuxt Content's resolved route—prefixed with `app.baseURL`—as the item URL. Root `index.md` is included. Documents with `draft: true` are excluded, as are data collections and non-Markdown sources.
+
+Use the same four `CLOUDFLARE_*` variables above or pass credentials in `cloudflareAISearchSync`. Keep all credentials in build-only environment variables; never put them in Nuxt public runtime configuration.
+
 All four Cloudflare settings are required. The API token needs **Account / AI Search:Edit** and **Account / AI Search:Run** permissions. Keep it server-side; never expose it through Vite client configuration or a browser bundle.
 
 The plugin always targets a named AI Search namespace. It never queries or updates an instance in the default namespace.
@@ -58,29 +95,34 @@ The plugin always targets a named AI Search namespace. It never queries or updat
 
 Cloudflare AI Search calls this setting `custom_metadata`. It defines the schema for item metadata, rather than the instance-level `metadata` object.
 
-The AI Search snippet uses `item.metadata.icon` for result icons, so each production build ensures that the instance has this field:
+The AI Search snippet uses `item.metadata.icon` for result icons and `item.metadata.url` for result links, so each production build ensures that the instance has these fields:
 
 ```json
-{ "field_name": "icon", "data_type": "text" }
+[
+  { "field_name": "icon", "data_type": "text" },
+  { "field_name": "url", "data_type": "text" }
+]
 ```
 
-- If `icon` is absent, the plugin adds it and preserves any unrelated custom metadata fields.
-- If exactly one `icon` field exists with type `text`, the plugin makes no change.
-- If `icon` is duplicated or uses another type, the plugin fails the build without changing the instance.
+- If either field is absent, the plugin adds it and preserves any unrelated custom metadata fields.
+- If exactly one field of each name exists with type `text`, the plugin makes no change.
+- If either field is duplicated or uses another type, the plugin fails the build without changing the instance.
 
-## Source behavior
+## Synchronization behavior
 
-`source` is optional, so existing `cloudflareAISearchSync()` usage remains valid. When supplied, it is authoritative over every item in the AI Search `builtin` source: the plugin uploads every item and deletes every built-in item that is absent from the completed local snapshot. This includes manually uploaded built-in items.
+The adapters are authoritative over the AI Search `builtin` source: they upload every item in the completed Markdown snapshot and delete every built-in item absent from it. This includes manually uploaded built-in items. An empty Markdown folder is therefore authoritative and deletes all built-in items.
 
-The plugin uploads all source files on each production build. Cloudflare AI Search detects unchanged content for the same key and skips reindexing it. Uploads complete before stale items are deleted, so an upload failure cannot remove existing content.
+Each production build uploads pages under their Markdown filename and path—such as `guide/page.md`—to prevent filename collisions. It writes the resolved, slash-prefixed URL to `item.metadata.url` and never mutates the uploaded item key. The VitePress adapter excludes the site-root URL (`/`, or the configured `base`); the filesystem and Nuxt Content adapters include their root `index.md`.
 
-Generic sources use their root-relative POSIX `relativePath` as the item key. `vitepressSource()` finds raw `*.md` files below Vite's resolved project root, skips `.git`, `.vitepress`, `dist`, and `node_modules`, and produces those paths. The VitePress `buildEnd` helper should be preferred for VitePress sites because its keys are their resolved public URLs. After each upload, it explicitly updates the AI Search item key to that URL, which the AI Search snippet uses for result links. It excludes the site-root URL (`/`, or the configured `base`) from synchronization.
+Cloudflare AI Search detects unchanged content for the same key and skips reindexing it. Uploads complete before stale items are deleted, so an upload failure cannot remove existing content.
 
-Item keys must be non-empty and at most 128 characters. UTF-8 source content must be at most 4 MB. The build fails before contacting AI Search if the local snapshot has duplicate keys or exceeds either limit.
+Item keys must be non-empty and at most 128 characters. Item URLs must start with `/`. UTF-8 source content must be at most 4 MB. The build fails before contacting AI Search if the local snapshot has duplicate keys or exceeds either limit.
 
 ## Development
 
-The repository uses Node 24 and pnpm 11.21.0. The VitePress fixture is located in `.playgrounds/vitepress`.
+The repository uses Node 24 and pnpm 11.21.0. Manual fixtures are located in `.playgrounds/vitepress`, `.playgrounds/vite-vue-markdown`, and `.playgrounds/nuxt-content`.
+
+The Vite Vue Markdown fixture renders its `src/pages` Markdown files through `unplugin-vue-markdown` and synchronizes that same folder with the filesystem adapter. Run `pnpm dev` from its directory to try the pages. Its `build` command, as well as the Nuxt fixture's `build` and `generate` commands, requires credentials for an isolated AI Search namespace.
 
 ## Repository
 

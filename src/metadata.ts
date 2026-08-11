@@ -1,4 +1,5 @@
-import Cloudflare from 'cloudflare'
+import { getCloudflareClient } from './client.js'
+import { requiredMetadata } from './constants.js'
 
 export interface CloudflareAISearchCredentials {
   accountId: string
@@ -7,20 +8,15 @@ export interface CloudflareAISearchCredentials {
   namespace: string
 }
 
-const iconMetadata = {
-  data_type: 'text',
-  field_name: 'icon',
-} as const
-
 interface CustomMetadata {
   data_type: 'text' | 'number' | 'boolean' | 'datetime'
   field_name: string
 }
 
-export async function ensureIconMetadata(
+export async function ensureItemMetadata(
   credentials: CloudflareAISearchCredentials,
 ): Promise<void> {
-  const client = new Cloudflare({ apiToken: credentials.apiToken })
+  const client = getCloudflareClient(credentials.apiToken)
 
   try {
     const instance = await client.aiSearch.namespaces.instances.read(credentials.instanceId, {
@@ -28,21 +24,27 @@ export async function ensureIconMetadata(
       name: credentials.namespace,
     })
     const customMetadata = instance.custom_metadata ?? []
-    const iconFields = customMetadata.filter(field => field.field_name === iconMetadata.field_name)
+    const missingMetadata = []
 
-    if (iconFields.length === 0) {
-      await client.aiSearch.namespaces.instances.update(credentials.instanceId, {
-        account_id: credentials.accountId,
-        custom_metadata: [...customMetadata, iconMetadata],
-        name: credentials.namespace,
-      })
-      return
+    for (const metadata of requiredMetadata) {
+      const fields = customMetadata.filter(field => field.field_name === metadata.field_name)
+
+      if (fields.length === 0) {
+        missingMetadata.push(metadata)
+      }
+      else if (fields.length !== 1 || fields[0].data_type !== metadata.data_type) {
+        throw new Error(
+          `Expected exactly one custom metadata field named "${metadata.field_name}" with type "${metadata.data_type}", received ${formatMetadataFields(metadata.field_name, fields)}.`,
+        )
+      }
     }
 
-    if (iconFields.length !== 1 || iconFields[0].data_type !== iconMetadata.data_type) {
-      throw new Error(
-        `Expected exactly one custom metadata field named "${iconMetadata.field_name}" with type "${iconMetadata.data_type}", received ${formatIconFields(iconFields)}.`,
-      )
+    if (missingMetadata.length > 0) {
+      await client.aiSearch.namespaces.instances.update(credentials.instanceId, {
+        account_id: credentials.accountId,
+        custom_metadata: [...customMetadata, ...missingMetadata],
+        name: credentials.namespace,
+      })
     }
   }
   catch (error) {
@@ -54,6 +56,6 @@ export async function ensureIconMetadata(
   }
 }
 
-function formatIconFields(fields: CustomMetadata[]): string {
-  return fields.length === 0 ? 'no icon fields' : JSON.stringify(fields)
+function formatMetadataFields(fieldName: string, fields: CustomMetadata[]): string {
+  return fields.length === 0 ? `no ${fieldName} fields` : JSON.stringify(fields)
 }

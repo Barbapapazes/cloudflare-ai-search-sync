@@ -1,3 +1,3 @@
+export { cloudflareAISearchSync } from './fs/index.js'
+export type { CloudflareAISearchSyncFsOptions } from './fs/types.js'
 export type { CloudflareAISearchSyncOptions } from './options.js'
-export { cloudflareAISearchSync } from './plugin.js'
-export type { ContentSource, SourceContext, SourceFile } from './source.js'

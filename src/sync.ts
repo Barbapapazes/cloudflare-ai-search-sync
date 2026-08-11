@@ -1,12 +1,13 @@
-import type Cloudflare from 'cloudflare'
 import type { CloudflareAISearchCredentials } from './metadata.js'
 import { Buffer } from 'node:buffer'
+import { getCloudflareClient } from './client.js'
 
 const maxFileSize = 4 * 1024 * 1024
 const maxKeyLength = 128
 
 export interface SyncItem {
   content: string
+  url: string
   key: string
   metadata?: Record<string, unknown>
 }
@@ -15,40 +16,31 @@ export interface SyncLogger {
   info: (message: string) => void
 }
 
-type ItemsClient = Cloudflare['aiSearch']['namespaces']['instances']['items']
-
 export async function syncItems(
   credentials: CloudflareAISearchCredentials,
   items: Iterable<SyncItem>,
-  client: ItemsClient,
   logger?: SyncLogger,
 ): Promise<void> {
   const snapshot = validateSnapshot(items)
-  const remoteItems = await listBuiltinItems(credentials, client)
+  const remoteItems = await listBuiltinItems(credentials)
+
+  const client = getCloudflareClient(credentials.apiToken)
 
   for (const item of snapshot) {
     try {
       logger?.info(`[vite-plugin-cloudflare-ai-search-sync] Uploading AI Search item "${item.key}".`)
-      await client.upload(credentials.instanceId, {
+      await client.aiSearch.namespaces.instances.items.upload(credentials.instanceId, {
         account_id: credentials.accountId,
         file: {
           file: new File([item.content], item.key, { type: 'text/markdown' }),
-          metadata: JSON.stringify(item.metadata ?? {}),
+          metadata: JSON.stringify({ ...item.metadata, url: item.url }),
           wait_for_completion: false,
         },
         name: credentials.namespace,
       })
-      logger?.info(`[vite-plugin-cloudflare-ai-search-sync] Setting AI Search item URL to "${item.key}".`)
-      await client.createOrUpdate(credentials.instanceId, {
-        account_id: credentials.accountId,
-        key: item.key,
-        name: credentials.namespace,
-        next_action: 'INDEX',
-        wait_for_completion: false,
-      })
     }
     catch (error) {
-      throw syncError('upload or update', credentials, item.key, error)
+      throw syncError('upload', credentials, item.key, error)
     }
   }
 
@@ -59,7 +51,7 @@ export async function syncItems(
 
     try {
       logger?.info(`[vite-plugin-cloudflare-ai-search-sync] Deleting AI Search item "${remoteItem.key}" (${remoteItem.id}).`)
-      await client.delete(remoteItem.id, {
+      await client.aiSearch.namespaces.instances.items.delete(remoteItem.id, {
         account_id: credentials.accountId,
         id: credentials.instanceId,
         name: credentials.namespace,
@@ -83,6 +75,9 @@ function validateSnapshot(items: Iterable<SyncItem>): SyncItem[] {
     if (!item.key) {
       throw new Error('AI Search item keys must not be empty.')
     }
+    if (!item.url.startsWith('/')) {
+      throw new Error(`AI Search item URL "${item.url}" must start with "/".`)
+    }
     if (item.key.length > maxKeyLength) {
       throw new Error(`AI Search item key "${item.key}" exceeds the ${maxKeyLength}-character limit.`)
     }
@@ -100,11 +95,11 @@ function validateSnapshot(items: Iterable<SyncItem>): SyncItem[] {
 
 async function listBuiltinItems(
   credentials: CloudflareAISearchCredentials,
-  client: ItemsClient,
 ) {
+  const client = getCloudflareClient(credentials.apiToken)
   try {
     const items = []
-    for await (const item of client.list(credentials.instanceId, {
+    for await (const item of client.aiSearch.namespaces.instances.items.list(credentials.instanceId, {
       account_id: credentials.accountId,
       name: credentials.namespace,
       source: 'builtin',
@@ -119,7 +114,7 @@ async function listBuiltinItems(
 }
 
 function syncError(
-  operation: 'delete' | 'list' | 'upload or update',
+  operation: 'delete' | 'list' | 'upload',
   credentials: CloudflareAISearchCredentials,
   item: string,
   error: unknown,

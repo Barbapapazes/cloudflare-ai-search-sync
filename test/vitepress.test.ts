@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cloudflareAISearchSync, vitepressSource } from '../src/vitepress.js'
+import { cloudflareAISearchSync } from '../src/vitepress/index.js'
 
-const { client, ensureIconMetadata, info } = vi.hoisted(() => ({
+const { client, ensureItemMetadata, info } = vi.hoisted(() => ({
   client: {
     createOrUpdate: vi.fn(),
     delete: vi.fn(),
@@ -13,7 +13,7 @@ const { client, ensureIconMetadata, info } = vi.hoisted(() => ({
     })),
     upload: vi.fn(),
   },
-  ensureIconMetadata: vi.fn(),
+  ensureItemMetadata: vi.fn(),
   info: vi.fn(),
 }))
 
@@ -23,7 +23,7 @@ vi.mock('cloudflare', () => ({
   },
 }))
 
-vi.mock('../src/metadata.js', () => ({ ensureIconMetadata }))
+vi.mock('../src/metadata.js', () => ({ ensureItemMetadata }))
 
 const temporaryDirectories: string[] = []
 
@@ -33,43 +33,6 @@ beforeEach(() => {
 
 afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { force: true, recursive: true })))
-})
-
-describe('vitepressSource', () => {
-  it('reads Markdown files in deterministic order and skips generated directories', async () => {
-    const root = await createTemporaryDirectory()
-    await Promise.all([
-      writeFile(join(root, 'z.md'), '# Z'),
-      mkdir(join(root, 'guide'), { recursive: true }),
-      mkdir(join(root, '.vitepress'), { recursive: true }),
-      mkdir(join(root, 'dist'), { recursive: true }),
-      mkdir(join(root, 'node_modules', 'dependency'), { recursive: true }),
-    ])
-    await Promise.all([
-      writeFile(join(root, 'guide', 'a.md'), '# A'),
-      writeFile(join(root, '.vitepress', 'ignored.md'), '# Ignored'),
-      writeFile(join(root, 'dist', 'ignored.md'), '# Ignored'),
-      writeFile(join(root, 'node_modules', 'dependency', 'ignored.md'), '# Ignored'),
-    ])
-
-    const files = []
-    for await (const file of vitepressSource().read({ root })) {
-      files.push(file)
-    }
-
-    expect(files).toEqual([
-      {
-        absolutePath: join(root, 'guide', 'a.md'),
-        content: '# A',
-        relativePath: 'guide/a.md',
-      },
-      {
-        absolutePath: join(root, 'z.md'),
-        content: '# Z',
-        relativePath: 'z.md',
-      },
-    ])
-  })
 })
 
 describe('cloudflareAISearchSync', () => {
@@ -94,9 +57,10 @@ describe('cloudflareAISearchSync', () => {
       logger: { info },
     })
 
-    expect(ensureIconMetadata).toHaveBeenCalledOnce()
+    expect(ensureItemMetadata).toHaveBeenCalledOnce()
     expect(client.upload).toHaveBeenCalledOnce()
-    expect(client.upload.mock.calls[0][1].file.file.name).toBe('/docs/guide.html')
+    expect(client.upload.mock.calls[0][1].file.file.name).toBe('guide.md')
+    expect(client.upload.mock.calls[0][1].file.metadata).toBe('{"url":"/docs/guide.html"}')
   })
 })
 

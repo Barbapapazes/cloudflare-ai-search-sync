@@ -1,8 +1,9 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: [
-    'src/index.ts',
-    'src/vitepress.ts',
-  ],
+  entry: {
+    index: 'src/index.ts',
+    nuxt: 'src/nuxt/index.ts',
+    vitepress: 'src/vitepress/index.ts',
+  },
 })
