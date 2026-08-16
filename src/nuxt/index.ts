@@ -1,3 +1,4 @@
+import type { NuxtModule } from 'nuxt/schema'
 import type { SyncItem } from '../sync.js'
 import type { NuxtContentSyncNuxt, NuxtContentSyncOptions } from './types.js'
 import process from 'node:process'
@@ -7,7 +8,9 @@ import { ensureItemMetadata } from '../metadata.js'
 import { syncItems } from '../sync.js'
 import { toNuxtContentItem } from './utils.js'
 
-export default defineNuxtModule<NuxtContentSyncOptions>({
+export * from './types.js'
+
+const module: NuxtModule<NuxtContentSyncOptions> = defineNuxtModule<NuxtContentSyncOptions>({
   meta: {
     name: 'vite-plugin-cloudflare-ai-search-sync',
     configKey: 'cloudflareAISearchSync',
@@ -20,6 +23,8 @@ export default defineNuxtModule<NuxtContentSyncOptions>({
     registerNuxtContentSync(options, nuxt as unknown as NuxtContentSyncNuxt)
   },
 })
+
+export default module
 
 /** Registers production-only Nuxt Content synchronization hooks. */
 export function registerNuxtContentSync(
