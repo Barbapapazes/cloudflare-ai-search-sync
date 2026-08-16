@@ -3,7 +3,7 @@ allowBuilds:
   workerd: false
 
 minimumReleaseAgeExclude:
-  - vitepress-plugin-cloudflare-ai-search@0.0.1
+  - vitepress-plugin-cloudflare-ai-search@0.0.2
 
 shellEmulator: true
 
