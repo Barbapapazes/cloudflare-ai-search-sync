@@ -60,14 +60,31 @@ describe('registerNuxtContentSync', () => {
   it('does not register hooks during development', () => {
     const { nuxt, hook } = createNuxt(true)
 
+    registerNuxtContentSync({ enabled: true }, nuxt)
+
+    expect(hook).not.toHaveBeenCalled()
+  })
+
+  it('does not register hooks by default', () => {
+    const { nuxt, hook } = createNuxt(false)
+
     registerNuxtContentSync({}, nuxt)
 
     expect(hook).not.toHaveBeenCalled()
   })
 
+  it('enables synchronization from the environment', () => {
+    vi.stubEnv('CLOUDFLARE_AI_SEARCH_SYNC_ENABLED', 'true')
+    const { nuxt, hook } = createNuxt(false)
+
+    registerNuxtContentSync({}, nuxt)
+
+    expect(hook).toHaveBeenCalledTimes(2)
+  })
+
   it('synchronizes the completed production snapshot at modules:done', async () => {
     const { hooks, nuxt } = createNuxt(false)
-    registerNuxtContentSync({}, nuxt)
+    registerNuxtContentSync({ enabled: true }, nuxt)
 
     await hooks.get('content:file:afterParse')?.(page({
       content: { extension: '.md', path: '/guide' },

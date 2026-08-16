@@ -28,7 +28,7 @@ export async function syncItems(
 
   for (const item of snapshot) {
     try {
-      logger?.info(`[vite-plugin-cloudflare-ai-search-sync] Uploading AI Search item "${item.key}".`)
+      logger?.info(`[cloudflare-ai-search-sync] Uploading AI Search item "${item.key}".`)
       await client.aiSearch.namespaces.instances.items.upload(credentials.instanceId, {
         account_id: credentials.accountId,
         file: {
@@ -50,7 +50,7 @@ export async function syncItems(
       continue
 
     try {
-      logger?.info(`[vite-plugin-cloudflare-ai-search-sync] Deleting AI Search item "${remoteItem.key}" (${remoteItem.id}).`)
+      logger?.info(`[cloudflare-ai-search-sync] Deleting AI Search item "${remoteItem.key}" (${remoteItem.id}).`)
       await client.aiSearch.namespaces.instances.items.delete(remoteItem.id, {
         account_id: credentials.accountId,
         id: credentials.instanceId,

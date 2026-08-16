@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cloudflareAISearchSync } from '../src/index.js'
+import { cloudflareAISearchSync } from '../src/fs/index.js'
 
 const { client, ensureItemMetadata, info, loadEnv } = vi.hoisted(() => ({
   client: {
@@ -55,6 +55,37 @@ describe('cloudflareAISearchSync', () => {
     expect(client.upload).not.toHaveBeenCalled()
   })
 
+  it('does not synchronize by default', async () => {
+    const root = await createTemporaryDirectory()
+    const plugin = cloudflareAISearchSync({ folder: 'content' })
+
+    await runBuildEnd(plugin, root)
+
+    expect(ensureItemMetadata).not.toHaveBeenCalled()
+    expect(client.upload).not.toHaveBeenCalled()
+  })
+
+  it('enables synchronization from the environment', async () => {
+    const root = await createTemporaryDirectory()
+    const content = join(root, 'content')
+    await mkdir(content)
+    await writeFile(join(content, 'guide.md'), '# Guide')
+    loadEnv.mockReturnValue({
+      CLOUDFLARE_ACCOUNT_ID: 'account',
+      CLOUDFLARE_AI_SEARCH_INSTANCE_ID: 'instance',
+      CLOUDFLARE_AI_SEARCH_NAMESPACE: 'namespace',
+      CLOUDFLARE_AI_SEARCH_SYNC_ENABLED: 'true',
+      CLOUDFLARE_API_TOKEN: 'token',
+    })
+
+    await runBuildEnd(cloudflareAISearchSync({ folder: 'content' }), root)
+
+    expect(ensureItemMetadata).toHaveBeenCalledOnce()
+    expect(await uploadedItems()).toEqual([
+      { content: '# Guide', key: 'guide.md', url: '/guide.html' },
+    ])
+  })
+
   it('syncs Markdown files recursively, including the root index page', async () => {
     const root = await createTemporaryDirectory()
     const content = join(root, 'content')
@@ -67,7 +98,7 @@ describe('cloudflareAISearchSync', () => {
       writeFile(join(content, 'ignored.txt'), 'ignored'),
     ])
 
-    const plugin = cloudflareAISearchSync({ folder: 'content' })
+    const plugin = cloudflareAISearchSync({ enabled: true, folder: 'content' })
     await runBuildEnd(plugin, root, '/docs/')
 
     expect(loadEnv).toHaveBeenCalledWith('test', root, '')
@@ -88,6 +119,7 @@ describe('cloudflareAISearchSync', () => {
     const plugin = cloudflareAISearchSync({
       base: '/search/',
       cleanUrls: true,
+      enabled: true,
       folder: content,
     })
     await runBuildEnd(plugin, root, '/docs/')
@@ -99,7 +131,7 @@ describe('cloudflareAISearchSync', () => {
 
   it('reports missing folders before making Cloudflare calls', async () => {
     const root = await createTemporaryDirectory()
-    const plugin = cloudflareAISearchSync({ folder: 'missing' })
+    const plugin = cloudflareAISearchSync({ enabled: true, folder: 'missing' })
 
     await expect(runBuildEnd(plugin, root)).rejects.toThrow('ENOENT')
 

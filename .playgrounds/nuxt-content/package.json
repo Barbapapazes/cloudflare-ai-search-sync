@@ -1,5 +1,5 @@
 {
-  "name": "vite-plugin-cloudflare-ai-search-sync-nuxt-content-playground",
+  "name": "cloudflare-ai-search-sync-nuxt-content-playground",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@nuxt/content": "^3.15.2",
-    "nuxt": "^4.5.0",
-    "vite-plugin-cloudflare-ai-search-sync": "workspace:*"
+    "cloudflare-ai-search-sync": "workspace:*",
+    "nuxt": "^4.5.0"
   }
 }

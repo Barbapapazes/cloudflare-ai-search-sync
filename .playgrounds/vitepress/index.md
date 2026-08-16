@@ -11,7 +11,7 @@ Set the Cloudflare account ID, API token, AI Search instance ID, and AI Search n
 Then build this fixture from the repository root:
 
 ```sh
-pnpm --filter vite-plugin-cloudflare-ai-search-sync-vitepress-playground build
+pnpm --filter cloudflare-ai-search-sync-vitepress-playground build
 ```
 
 The build verifies that the target instance declares `icon` as a text custom metadata field. It adds the field when missing, preserves other custom metadata fields, and fails without updating an invalid `icon` declaration.

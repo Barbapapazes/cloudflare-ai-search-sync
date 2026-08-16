@@ -1,16 +1,16 @@
-# vite-plugin-cloudflare-ai-search-sync
+# cloudflare-ai-search-sync
 
 A Vite plugin that synchronizes Markdown files to Cloudflare AI Search and configures the metadata schema required to use result links and icons with the [AI Search snippet](https://github.com/cloudflare/ai-search-snippet). A VitePress `buildEnd` hook is also available.
 
 ## Installation
 
 ```sh
-pnpm add vite-plugin-cloudflare-ai-search-sync
+pnpm add cloudflare-ai-search-sync
 ```
 
 ## Configuration
 
-The plugin runs at the end of successful Vite builds only. It does not contact Cloudflare while developing or after a failed build.
+The adapters are disabled by default. Enable synchronization with `enabled: true` or `CLOUDFLARE_AI_SEARCH_SYNC_ENABLED=true`. An explicit `enabled` option takes precedence over the environment variable. Once enabled, the Vite plugin runs at the end of successful builds only. It does not contact Cloudflare while developing or after a failed build.
 
 Configure credentials in a local `.env` file or through your CI environment:
 
@@ -19,53 +19,62 @@ CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_AI_SEARCH_INSTANCE_ID=
 CLOUDFLARE_AI_SEARCH_NAMESPACE=
+CLOUDFLARE_AI_SEARCH_SYNC_ENABLED=true
 ```
 
 Vite loads these variables using its resolved mode and environment directory. Alternatively, pass them directly as plugin options. Explicit options take precedence over environment variables.
 
-### Vite filesystem adapter
+### Custom integrations
 
-Configure the standard Vite plugin with the Markdown source folder. Relative folders are resolved from the Vite project root.
+Build an adapter for any content source with the root package utilities. Resolve credentials from your options and environment, map your content to `SyncItem` objects, then synchronize the completed snapshot:
 
 ```ts
+import type { SyncItem } from 'cloudflare-ai-search-sync'
+import {
+  resolveCredentials,
+  synchronizeItems,
+  toPublicUrl,
+} from 'cloudflare-ai-search-sync'
+
+const credentials = resolveCredentials(options, process.env)
+const items: SyncItem[] = pages.map(page => ({
+  content: page.markdown,
+  key: page.path,
+  url: toPublicUrl(page.path, '/docs/'),
+}))
+
+await synchronizeItems(credentials, items)
+```
+
+`synchronizeItems` configures the required metadata before uploading the snapshot and deleting stale built-in items. Use `ensureItemMetadata` or `syncItems` separately when your integration needs to control either phase. `isSyncEnabled`, `assertCredential`, `siteRoot`, and `getCloudflareClient` are also available for custom integration code.
+
+### Vite filesystem adapter
+
+Use the `/fs` entry point to synchronize a folder of Markdown files after successful Vite builds. Relative folders are resolved from the Vite project root.
+
+```ts
+import { cloudflareAISearchSync } from 'cloudflare-ai-search-sync/fs'
 import { defineConfig } from 'vite'
-import { cloudflareAISearchSync } from 'vite-plugin-cloudflare-ai-search-sync'
 
 export default defineConfig({
   plugins: [
-    cloudflareAISearchSync({ folder: './docs' }),
+    cloudflareAISearchSync({ enabled: true, folder: './docs' }),
   ],
 })
 ```
 
-The adapter scans the folder recursively and indexes regular `.md` files only. Files retain their paths as AI Search keys, so `guide/page.md` remains `guide/page.md`. It generates VitePress-compatible URLs using Vite's resolved `base` by default:
-
-- `index.md` → `/`
-- `guide/index.md` → `/guide/`
-- `guide/page.md` → `/guide/page.html`
-
-Set `cleanUrls: true` to omit `.html` from non-index routes, or set `base` to override Vite's resolved base:
-
-```ts
-cloudflareAISearchSync({
-  base: '/docs/',
-  cleanUrls: true,
-  folder: './content',
-})
-```
-
-Unlike the VitePress hook, this adapter indexes the source folder's root `index.md`.
+The adapter scans regular `.md` files recursively, retains their paths as AI Search keys, and derives VitePress-compatible URLs from Vite's resolved `base`. Set `cleanUrls: true` to omit `.html` from non-index routes, or set `base` to override Vite's resolved base.
 
 ### VitePress adapter
 
 Use the native VitePress `buildEnd` hook. It resolves public routes, including `base`, rewrites, and `cleanUrls`, before uploading them:
 
 ```ts
-import { cloudflareAISearchSync } from 'vite-plugin-cloudflare-ai-search-sync/vitepress'
+import { cloudflareAISearchSync } from 'cloudflare-ai-search-sync/vitepress'
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  buildEnd: cloudflareAISearchSync(),
+  buildEnd: cloudflareAISearchSync({ enabled: true }),
 })
 ```
 
@@ -77,9 +86,9 @@ Nuxt 4 and Nuxt Content v3 applications can register the dedicated module. It sy
 export default defineNuxtConfig({
   modules: [
     '@nuxt/content',
-    'vite-plugin-cloudflare-ai-search-sync/nuxt',
+    'cloudflare-ai-search-sync/nuxt',
   ],
-  cloudflareAISearchSync: {},
+  cloudflareAISearchSync: { enabled: true },
 })
 ```
 
@@ -126,7 +135,7 @@ The Vite Vue Markdown fixture renders its `src/pages` Markdown files through `un
 
 ## Repository
 
-<https://github.com/Barbapapazes/vite-plugin-cloudflare-ai-search-sync>
+<https://github.com/Barbapapazes/cloudflare-ai-search-sync>
 
 ## License
 

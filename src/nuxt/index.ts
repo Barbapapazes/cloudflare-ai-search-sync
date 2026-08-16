@@ -3,21 +3,23 @@ import type { SyncItem } from '../sync.js'
 import type { NuxtContentSyncNuxt, NuxtContentSyncOptions } from './types.js'
 import process from 'node:process'
 import { defineNuxtModule } from '@nuxt/kit'
-import { assertCredential } from '../credentials.js'
-import { ensureItemMetadata } from '../metadata.js'
-import { syncItems } from '../sync.js'
+import { isSyncEnabled, resolveCredentials } from '../credentials.js'
+import { synchronizeItems } from '../synchronize.js'
 import { toNuxtContentItem } from './utils.js'
 
 export * from './types.js'
 
 const module: NuxtModule<NuxtContentSyncOptions> = defineNuxtModule<NuxtContentSyncOptions>({
   meta: {
-    name: 'vite-plugin-cloudflare-ai-search-sync',
+    name: 'cloudflare-ai-search-sync',
     configKey: 'cloudflareAISearchSync',
     compatibility: { nuxt: '>=4.1.0 <5' },
   },
   moduleDependencies: {
     '@nuxt/content': { version: '>=3.15.2 <4' },
+  },
+  defaults: {
+    enabled: false,
   },
   setup(options: NuxtContentSyncOptions, nuxt: unknown) {
     registerNuxtContentSync(options, nuxt as unknown as NuxtContentSyncNuxt)
@@ -31,7 +33,7 @@ export function registerNuxtContentSync(
   options: NuxtContentSyncOptions,
   nuxt: NuxtContentSyncNuxt,
 ): void {
-  if (nuxt.options.dev)
+  if (nuxt.options.dev || !isSyncEnabled(options, process.env))
     return
 
   const items: SyncItem[] = []
@@ -44,22 +46,7 @@ export function registerNuxtContentSync(
       items.push(item)
   })
   nuxt.hook('modules:done', async () => {
-    const credentials = resolveCredentials(options)
-    await ensureItemMetadata(credentials)
-    await syncItems(credentials, items, nuxt.logger)
+    const credentials = resolveCredentials(options, process.env)
+    await synchronizeItems(credentials, items, nuxt.logger)
   })
-}
-
-function resolveCredentials(options: NuxtContentSyncOptions) {
-  const accountId = options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
-  const apiToken = options.apiToken ?? process.env.CLOUDFLARE_API_TOKEN
-  const instanceId = options.instanceId ?? process.env.CLOUDFLARE_AI_SEARCH_INSTANCE_ID
-  const namespace = options.namespace ?? process.env.CLOUDFLARE_AI_SEARCH_NAMESPACE
-
-  assertCredential('accountId', 'CLOUDFLARE_ACCOUNT_ID', accountId)
-  assertCredential('apiToken', 'CLOUDFLARE_API_TOKEN', apiToken)
-  assertCredential('instanceId', 'CLOUDFLARE_AI_SEARCH_INSTANCE_ID', instanceId)
-  assertCredential('namespace', 'CLOUDFLARE_AI_SEARCH_NAMESPACE', namespace)
-
-  return { accountId, apiToken, instanceId, namespace }
 }

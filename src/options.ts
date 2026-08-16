@@ -1,4 +1,6 @@
 export interface CloudflareAISearchSyncOptions {
+  /** Enables synchronization. Defaults to CLOUDFLARE_AI_SEARCH_SYNC_ENABLED, then false. */
+  enabled?: boolean
   /** Cloudflare account ID. Defaults to CLOUDFLARE_ACCOUNT_ID. */
   accountId?: string
   /** Cloudflare API token. Defaults to CLOUDFLARE_API_TOKEN. */

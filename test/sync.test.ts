@@ -46,8 +46,8 @@ describe('syncItems', () => {
       id: 'instance',
       name: 'namespace',
     })
-    expect(info).toHaveBeenCalledWith('[vite-plugin-cloudflare-ai-search-sync] Uploading AI Search item "current.md".')
-    expect(info).toHaveBeenCalledWith('[vite-plugin-cloudflare-ai-search-sync] Deleting AI Search item "stale.md" (stale-id).')
+    expect(info).toHaveBeenCalledWith('[cloudflare-ai-search-sync] Uploading AI Search item "current.md".')
+    expect(info).toHaveBeenCalledWith('[cloudflare-ai-search-sync] Deleting AI Search item "stale.md" (stale-id).')
   })
 
   it('does not delete remote items when an upload fails', async () => {

@@ -1,5 +1,5 @@
 {
-  "name": "vite-plugin-cloudflare-ai-search-sync-vitepress-playground",
+  "name": "cloudflare-ai-search-sync-vitepress-playground",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -9,8 +9,8 @@
     "preview": "vitepress preview ."
   },
   "devDependencies": {
+    "cloudflare-ai-search-sync": "workspace:*",
     "vite": "^8.2.1",
-    "vite-plugin-cloudflare-ai-search-sync": "workspace:*",
     "vitepress": "next",
     "vitepress-plugin-cloudflare-ai-search": "^0.0.1"
   }
