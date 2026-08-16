@@ -12,6 +12,6 @@
     "cloudflare-ai-search-sync": "workspace:*",
     "vite": "^8.2.1",
     "vitepress": "next",
-    "vitepress-plugin-cloudflare-ai-search": "^0.0.2"
+    "vitepress-plugin-cloudflare-ai-search": "^0.0.3"
   }
 }
