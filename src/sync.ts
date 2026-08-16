@@ -7,9 +7,11 @@ const maxKeyLength = 128
 
 export interface SyncItem {
   content: string
+  description: string
   url: string
   key: string
   metadata?: Record<string, unknown>
+  title: string
 }
 
 export interface SyncLogger {
@@ -33,7 +35,12 @@ export async function syncItems(
         account_id: credentials.accountId,
         file: {
           file: new File([item.content], item.key, { type: 'text/markdown' }),
-          metadata: JSON.stringify({ ...item.metadata, url: item.url }),
+          metadata: JSON.stringify({
+            ...item.metadata,
+            description: item.description,
+            title: item.title,
+            url: item.url,
+          }),
           wait_for_completion: false,
         },
         name: credentials.namespace,
@@ -77,6 +84,12 @@ function validateSnapshot(items: Iterable<SyncItem>): SyncItem[] {
     }
     if (!item.url.startsWith('/')) {
       throw new Error(`AI Search item URL "${item.url}" must start with "/".`)
+    }
+    if (typeof item.title !== 'string' || !item.title.trim()) {
+      throw new Error(`AI Search item "${item.key}" title must not be empty.`)
+    }
+    if (typeof item.description !== 'string' || !item.description.trim()) {
+      throw new Error(`AI Search item "${item.key}" description must not be empty.`)
     }
     if (item.key.length > maxKeyLength) {
       throw new Error(`AI Search item key "${item.key}" exceeds the ${maxKeyLength}-character limit.`)

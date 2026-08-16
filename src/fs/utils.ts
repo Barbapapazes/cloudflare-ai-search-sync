@@ -1,6 +1,7 @@
 import type { SyncItem } from '../sync.js'
 import { readdir, readFile } from 'node:fs/promises'
 import { relative, resolve, sep } from 'node:path'
+import { extractMarkdownMetadata } from '../markdown.js'
 import { toPublicUrl } from '../urls.js'
 
 export async function readMarkdownFiles(
@@ -12,9 +13,11 @@ export async function readMarkdownFiles(
 
   return Promise.all(paths.map(async (filePath) => {
     const key = toPosixPath(relative(folder, filePath))
+    const content = await readFile(filePath, 'utf8')
     return {
-      content: await readFile(filePath, 'utf8'),
+      content,
       key,
+      ...extractMarkdownMetadata(content, key),
       url: toPublicUrl(key, base, cleanUrls),
     }
   }))

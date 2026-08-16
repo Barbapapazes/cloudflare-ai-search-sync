@@ -1,6 +1,7 @@
 import type { SyncItem } from '../sync.js'
 import type { NuxtContentAfterParseContext } from './types.js'
 import { extname, relative, sep } from 'node:path'
+import { extractMarkdownMetadata } from '../markdown.js'
 
 export function toNuxtContentItem(
   context: NuxtContentAfterParseContext,
@@ -14,9 +15,14 @@ export function toNuxtContentItem(
   if (!route)
     return
 
+  const key = toPosixPath(relative(rootDir, context.file.path))
+  const metadata = extractMarkdownMetadata(context.file.body, key)
+
   return {
     content: context.file.body,
-    key: toPosixPath(relative(rootDir, context.file.path)),
+    description: stringValue(context.content.description) ?? metadata.description,
+    key,
+    title: stringValue(context.content.title) ?? metadata.title,
     url: withBaseURL(route, baseURL),
   }
 }
@@ -36,4 +42,8 @@ export function withBaseURL(route: string, baseURL: string): string {
 
 function toPosixPath(path: string): string {
   return sep === '/' ? path : path.replaceAll(sep, '/')
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }

@@ -24,7 +24,7 @@ describe('ensureItemMetadata', () => {
     vi.clearAllMocks()
   })
 
-  it('adds missing icon and URL fields while preserving existing metadata', async () => {
+  it('adds missing document metadata fields while preserving existing metadata', async () => {
     read.mockResolvedValue({
       custom_metadata: [{ data_type: 'boolean', field_name: 'published' }],
     })
@@ -35,7 +35,9 @@ describe('ensureItemMetadata', () => {
       account_id: 'account',
       custom_metadata: [
         { data_type: 'boolean', field_name: 'published' },
+        { data_type: 'text', field_name: 'description' },
         { data_type: 'text', field_name: 'icon' },
+        { data_type: 'text', field_name: 'title' },
         { data_type: 'text', field_name: 'url' },
       ],
       name: 'namespace',
@@ -45,7 +47,9 @@ describe('ensureItemMetadata', () => {
   it('does not update an instance with valid required metadata', async () => {
     read.mockResolvedValue({
       custom_metadata: [
+        { data_type: 'text', field_name: 'description' },
         { data_type: 'text', field_name: 'icon' },
+        { data_type: 'text', field_name: 'title' },
         { data_type: 'text', field_name: 'url' },
       ],
     })

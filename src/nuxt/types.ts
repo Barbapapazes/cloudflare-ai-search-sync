@@ -7,10 +7,12 @@ export interface NuxtContentFile {
 }
 
 export interface NuxtContentDocument {
+  description?: unknown
   draft?: unknown
   extension?: string
   meta?: { draft?: unknown }
   path?: string
+  title?: unknown
 }
 
 export interface NuxtContentAfterParseContext {

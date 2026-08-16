@@ -82,7 +82,7 @@ describe('cloudflareAISearchSync', () => {
 
     expect(ensureItemMetadata).toHaveBeenCalledOnce()
     expect(await uploadedItems()).toEqual([
-      { content: '# Guide', key: 'guide.md', url: '/guide.html' },
+      { content: '# Guide', description: 'Guide', key: 'guide.md', title: 'Guide', url: '/guide.html' },
     ])
   })
 
@@ -104,10 +104,10 @@ describe('cloudflareAISearchSync', () => {
     expect(loadEnv).toHaveBeenCalledWith('test', root, '')
     expect(ensureItemMetadata).toHaveBeenCalledOnce()
     expect(await uploadedItems()).toEqual([
-      { content: '# About', key: 'about.md', url: '/docs/about.html' },
-      { content: '# Guide', key: 'guide/index.md', url: '/docs/guide/' },
-      { content: '# Intro', key: 'guide/intro.md', url: '/docs/guide/intro.html' },
-      { content: '# Home', key: 'index.md', url: '/docs/' },
+      { content: '# About', description: 'About', key: 'about.md', title: 'About', url: '/docs/about.html' },
+      { content: '# Guide', description: 'Guide', key: 'guide/index.md', title: 'Guide', url: '/docs/guide/' },
+      { content: '# Intro', description: 'Intro', key: 'guide/intro.md', title: 'Intro', url: '/docs/guide/intro.html' },
+      { content: '# Home', description: 'Home', key: 'index.md', title: 'Home', url: '/docs/' },
     ])
   })
 
@@ -125,7 +125,7 @@ describe('cloudflareAISearchSync', () => {
     await runBuildEnd(plugin, root, '/docs/')
 
     expect(await uploadedItems()).toEqual([
-      { content: '# Guide', key: 'guide.md', url: '/search/guide' },
+      { content: '# Guide', description: 'Guide', key: 'guide.md', title: 'Guide', url: '/search/guide' },
     ])
   })
 
@@ -169,10 +169,10 @@ async function createTemporaryDirectory(): Promise<string> {
   return directory
 }
 
-async function uploadedItems(): Promise<Array<{ content: string, key: string, url: string }>> {
+async function uploadedItems(): Promise<Array<{ content: string, description: string, key: string, title: string, url: string }>> {
   return Promise.all(client.upload.mock.calls.map(async ([, parameters]) => ({
     content: await parameters.file.file.text(),
     key: parameters.file.file.name,
-    url: JSON.parse(parameters.file.metadata).url,
+    ...JSON.parse(parameters.file.metadata),
   })))
 }

@@ -27,7 +27,13 @@ describe('syncItems', () => {
     const info = vi.fn()
     useClient(client)
 
-    await syncItems(credentials, [{ content: '# Current', key: 'current.md', url: '/current.html' }], { info })
+    await syncItems(credentials, [{
+      content: '# Current',
+      description: 'The current page.',
+      key: 'current.md',
+      title: 'Current',
+      url: '/current.html',
+    }], { info })
 
     expect(list).toHaveBeenCalledWith('instance', {
       account_id: 'account',
@@ -36,7 +42,7 @@ describe('syncItems', () => {
     })
     expect(upload).toHaveBeenCalledOnce()
     const [, parameters] = upload.mock.calls[0]
-    expect(parameters.file.metadata).toBe('{"url":"/current.html"}')
+    expect(parameters.file.metadata).toBe('{"description":"The current page.","title":"Current","url":"/current.html"}')
     expect(parameters.file.wait_for_completion).toBe(false)
     expect(parameters.file.file.name).toBe('current.md')
     expect(await parameters.file.file.text()).toBe('# Current')
@@ -62,7 +68,13 @@ describe('syncItems', () => {
     useClient(client)
 
     await expect(
-      syncItems(credentials, [{ content: '# Current', key: 'current.md', url: '/current.html' }]),
+      syncItems(credentials, [{
+        content: '# Current',
+        description: 'The current page.',
+        key: 'current.md',
+        title: 'Current',
+        url: '/current.html',
+      }]),
     )
       .rejects
       .toThrow('upload failed')
@@ -84,13 +96,15 @@ describe('syncItems', () => {
 
     await syncItems(credentials, [{
       content: '# Markdown examples',
+      description: 'Examples of Markdown.',
       key: 'guides/markdown-examples.md',
+      title: 'Markdown examples',
       url: '/guides/markdown-examples.html',
     }])
 
     expect(upload).toHaveBeenCalledOnce()
     expect(upload.mock.calls[0][1].file.file.name).toBe('guides/markdown-examples.md')
-    expect(upload.mock.calls[0][1].file.metadata).toBe('{"url":"/guides/markdown-examples.html"}')
+    expect(upload.mock.calls[0][1].file.metadata).toBe('{"description":"Examples of Markdown.","title":"Markdown examples","url":"/guides/markdown-examples.html"}')
     expect(createOrUpdate).not.toHaveBeenCalled()
     expect(remove).not.toHaveBeenCalled()
   })
@@ -105,8 +119,8 @@ describe('syncItems', () => {
     useClient(client)
 
     await expect(syncItems(credentials, [
-      { content: 'one', key: 'duplicate.md', url: '/duplicate.html' },
-      { content: 'two', key: 'duplicate.md', url: '/other.html' },
+      { content: 'one', description: 'One.', key: 'duplicate.md', title: 'One', url: '/duplicate.html' },
+      { content: 'two', description: 'Two.', key: 'duplicate.md', title: 'Two', url: '/other.html' },
     ])).rejects.toThrow('occurs more than once')
 
     expect(client.list).not.toHaveBeenCalled()
@@ -144,12 +158,36 @@ describe('syncItems', () => {
 
     await expect(syncItems(credentials, [{
       content: '# Current',
+      description: 'The current page.',
       key: 'current.md',
+      title: 'Current',
       url: 'current.html',
     }])).rejects.toThrow('must start with "/"')
 
     expect(client.list).not.toHaveBeenCalled()
     expect(client.upload).not.toHaveBeenCalled()
+  })
+
+  it('rejects missing document metadata before making API calls', async () => {
+    const client = {
+      createOrUpdate: vi.fn(),
+      delete: vi.fn(),
+      list: vi.fn(),
+      upload: vi.fn(),
+    }
+    useClient(client)
+
+    await expect(syncItems(credentials, [{
+      content: '# Current',
+      description: '',
+      key: 'current.md',
+      title: 'Current',
+      url: '/current.html',
+    }])).rejects.toThrow('description must not be empty')
+
+    expect(client.list).not.toHaveBeenCalled()
+    expect(client.upload).not.toHaveBeenCalled()
+    expect(client.delete).not.toHaveBeenCalled()
   })
 })
 

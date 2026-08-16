@@ -25,7 +25,9 @@ describe('nuxt Content snapshot items', () => {
       file: { body: '# Intro', path: '/project/content/guide/intro.md' },
     }), '/project', '/docs/')).toEqual({
       content: '# Intro',
+      description: 'Intro',
       key: 'content/guide/intro.md',
+      title: 'Intro',
       url: '/docs/guide/intro',
     })
   })
@@ -103,7 +105,9 @@ describe('registerNuxtContentSync', () => {
     expect(ensureItemMetadata).toHaveBeenCalledWith(credentials)
     expect(syncItems).toHaveBeenCalledWith(credentials, [{
       content: '# Guide',
+      description: 'Guide',
       key: 'content/guide.md',
+      title: 'Guide',
       url: '/docs/guide',
     }], nuxt.logger)
   })

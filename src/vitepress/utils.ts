@@ -2,6 +2,7 @@ import type { SyncItem } from '../sync.js'
 import type { VitePressSiteConfig } from './types.js'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { extractMarkdownMetadata } from '../markdown.js'
 import { siteRoot, toPublicUrl } from '../urls.js'
 
 export async function readVitePressPages(siteConfig: VitePressSiteConfig): Promise<SyncItem[]> {
@@ -13,9 +14,13 @@ export async function readVitePressPages(siteConfig: VitePressSiteConfig): Promi
     }
   }).filter(({ url }) => url !== siteRoot(siteConfig.site.base))
 
-  return Promise.all(pages.map(async ({ page, url }) => ({
-    content: await readFile(resolve(siteConfig.srcDir, page), 'utf8'),
-    key: page,
-    url,
-  })))
+  return Promise.all(pages.map(async ({ page, url }) => {
+    const content = await readFile(resolve(siteConfig.srcDir, page), 'utf8')
+    return {
+      content,
+      key: page,
+      ...extractMarkdownMetadata(content, page),
+      url,
+    }
+  }))
 }

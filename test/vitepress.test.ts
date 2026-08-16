@@ -109,7 +109,7 @@ describe('cloudflareAISearchSync', () => {
     expect(ensureItemMetadata).toHaveBeenCalledOnce()
     expect(client.upload).toHaveBeenCalledOnce()
     expect(client.upload.mock.calls[0][1].file.file.name).toBe('guide.md')
-    expect(client.upload.mock.calls[0][1].file.metadata).toBe('{"url":"/docs/guide.html"}')
+    expect(client.upload.mock.calls[0][1].file.metadata).toBe('{"description":"Guide","title":"Guide","url":"/docs/guide.html"}')
   })
 })
 

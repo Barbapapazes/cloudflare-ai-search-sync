@@ -39,7 +39,9 @@ import {
 const credentials = resolveCredentials(options, process.env)
 const items: SyncItem[] = pages.map(page => ({
   content: page.markdown,
+  description: page.description,
   key: page.path,
+  title: page.title,
   url: toPublicUrl(page.path, '/docs/'),
 }))
 
@@ -104,24 +106,26 @@ The plugin always targets a named AI Search namespace. It never queries or updat
 
 Cloudflare AI Search calls this setting `custom_metadata`. It defines the schema for item metadata, rather than the instance-level `metadata` object.
 
-The AI Search snippet uses `item.metadata.icon` for result icons and `item.metadata.url` for result links, so each production build ensures that the instance has these fields:
+The AI Search snippet displays `item.metadata.title` and `item.metadata.description`, and also uses `item.metadata.icon` for result icons and `item.metadata.url` for result links. Each production build ensures that the instance has these fields:
 
 ```json
 [
+  { "field_name": "description", "data_type": "text" },
   { "field_name": "icon", "data_type": "text" },
+  { "field_name": "title", "data_type": "text" },
   { "field_name": "url", "data_type": "text" }
 ]
 ```
 
-- If either field is absent, the plugin adds it and preserves any unrelated custom metadata fields.
-- If exactly one field of each name exists with type `text`, the plugin makes no change.
-- If either field is duplicated or uses another type, the plugin fails the build without changing the instance.
+- If a required field is absent, the plugin adds it and preserves any unrelated custom metadata fields.
+- If exactly one field of each required name exists with type `text`, the plugin makes no change.
+- If a required field is duplicated or uses another type, the plugin fails the build without changing the instance.
 
 ## Synchronization behavior
 
 The adapters are authoritative over the AI Search `builtin` source: they upload every item in the completed Markdown snapshot and delete every built-in item absent from it. This includes manually uploaded built-in items. An empty Markdown folder is therefore authoritative and deletes all built-in items.
 
-Each production build uploads pages under their Markdown filename and path—such as `guide/page.md`—to prevent filename collisions. It writes the resolved, slash-prefixed URL to `item.metadata.url` and never mutates the uploaded item key. The VitePress adapter excludes the site-root URL (`/`, or the configured `base`); the filesystem and Nuxt Content adapters include their root `index.md`.
+Each production build uploads pages under their Markdown filename and path—such as `guide/page.md`—to prevent filename collisions. It writes the resolved, slash-prefixed URL to `item.metadata.url`, plus a non-empty title and description. The filesystem and VitePress adapters prefer Markdown frontmatter (`title` and `description`), then use the first heading and paragraph. Nuxt Content uses its parsed title and description when available and otherwise follows the same Markdown rules. The VitePress adapter excludes the site-root URL (`/`, or the configured `base`); the filesystem and Nuxt Content adapters include their root `index.md`.
 
 Cloudflare AI Search detects unchanged content for the same key and skips reindexing it. Uploads complete before stale items are deleted, so an upload failure cannot remove existing content.
 
