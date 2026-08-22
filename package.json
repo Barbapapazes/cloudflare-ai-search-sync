@@ -1,7 +1,7 @@
 {
   "name": "cloudflare-ai-search-sync",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "packageManager": "pnpm@11.21.0",
   "description": "Synchronize Markdown files to Cloudflare AI Search automatically.",
   "author": "Estéban Soubiran <esteban@soubiran.dev>",
