@@ -26,17 +26,21 @@ Vite loads these variables using its resolved mode and environment directory. Al
 
 ### Custom integrations
 
-Build an adapter for any content source with the root package utilities. Resolve credentials from your options and environment, map your content to `SyncItem` objects, then synchronize the completed snapshot:
+Build an adapter for any content source with the root package utilities. Provide the credentials, map your content to `SyncItem` objects, then synchronize the completed snapshot:
 
 ```ts
-import type { SyncItem } from 'cloudflare-ai-search-sync'
+import type { CloudflareAISearchCredentials, SyncItem } from 'cloudflare-ai-search-sync'
 import {
-  resolveCredentials,
   synchronizeItems,
   toPublicUrl,
 } from 'cloudflare-ai-search-sync'
 
-const credentials = resolveCredentials(options, process.env)
+const credentials: CloudflareAISearchCredentials = {
+  accountId,
+  apiToken,
+  instanceId,
+  namespace,
+}
 const items: SyncItem[] = pages.map(page => ({
   content: page.markdown,
   description: page.description,
@@ -49,7 +53,7 @@ const items: SyncItem[] = pages.map(page => ({
 await synchronizeItems(credentials, items)
 ```
 
-`synchronizeItems` configures the required metadata before uploading the snapshot and deleting stale built-in items. Use `ensureItemMetadata` or `syncItems` separately when your integration needs to control either phase. `isSyncEnabled`, `assertCredential`, `siteRoot`, and `getCloudflareClient` are also available for custom integration code.
+`synchronizeItems` configures the required metadata before uploading the snapshot and deleting stale built-in items. Use `ensureItemMetadata` or `syncItems` separately when your integration needs to control either phase. `isSyncEnabled`, `siteRoot`, and `getCloudflareClient` are also available for custom integration code.
 
 ### Vite filesystem adapter
 

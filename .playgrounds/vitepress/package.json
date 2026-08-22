@@ -8,10 +8,12 @@
     "build": "vitepress build .",
     "preview": "vitepress preview ."
   },
+  "dependencies": {
+    "vitepress": "next"
+  },
   "devDependencies": {
     "cloudflare-ai-search-sync": "workspace:*",
     "vite": "^8.2.1",
-    "vitepress": "next",
     "vitepress-plugin-cloudflare-ai-search": "^0.0.3"
   }
 }

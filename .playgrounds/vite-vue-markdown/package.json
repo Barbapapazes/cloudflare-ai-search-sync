@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "vitepress": "2.0.0-alpha.19"
+  },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",
     "cloudflare-ai-search-sync": "workspace:*",

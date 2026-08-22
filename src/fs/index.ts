@@ -2,7 +2,7 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import type { CloudflareAISearchSyncFsOptions } from './types.js'
 import { resolve } from 'node:path'
 import { loadEnv } from 'vite'
-import { isSyncEnabled, resolveCredentials } from '../credentials.js'
+import { isSyncEnabled, resolveCredentialsOrWarn } from '../credentials.js'
 import { synchronizeItems } from '../synchronize.js'
 import { readMarkdownFiles } from './utils.js'
 
@@ -28,7 +28,10 @@ export function cloudflareAISearchSync(options: CloudflareAISearchSyncFsOptions)
       if (!isSyncEnabled(options, environment))
         return
 
-      const credentials = resolveCredentials(options, environment)
+      const credentials = resolveCredentialsOrWarn(options, environment, config.logger)
+      if (!credentials)
+        return
+
       const pages = await readMarkdownFiles(
         resolve(config.root, options.folder),
         options.base ?? config.base,

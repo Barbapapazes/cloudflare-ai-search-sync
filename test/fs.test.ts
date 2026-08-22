@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cloudflareAISearchSync } from '../src/fs/index.js'
 
-const { client, ensureItemMetadata, info, loadEnv } = vi.hoisted(() => ({
+const { client, ensureItemMetadata, info, loadEnv, warn } = vi.hoisted(() => ({
   client: {
     createOrUpdate: vi.fn(),
     delete: vi.fn(),
@@ -16,6 +16,7 @@ const { client, ensureItemMetadata, info, loadEnv } = vi.hoisted(() => ({
   ensureItemMetadata: vi.fn(),
   info: vi.fn(),
   loadEnv: vi.fn(),
+  warn: vi.fn(),
 }))
 
 vi.mock('cloudflare', () => ({
@@ -93,6 +94,20 @@ describe('cloudflareAISearchSync', () => {
     ])
   })
 
+  it('warns and skips synchronization when enabled without credentials', async () => {
+    const root = await createTemporaryDirectory()
+    loadEnv.mockReturnValue({ CLOUDFLARE_AI_SEARCH_SYNC_ENABLED: 'true' })
+
+    await runBuildEnd(cloudflareAISearchSync({ folder: 'missing' }), root)
+
+    expect(warn).toHaveBeenCalledWith(
+      '[cloudflare-ai-search-sync] Missing Cloudflare AI Search accountId. Set the "accountId" plugin option or CLOUDFLARE_ACCOUNT_ID.',
+    )
+    expect(ensureItemMetadata).not.toHaveBeenCalled()
+    expect(client.list).not.toHaveBeenCalled()
+    expect(client.upload).not.toHaveBeenCalled()
+  })
+
   it('syncs Markdown files recursively, including the root index page', async () => {
     const root = await createTemporaryDirectory()
     const content = join(root, 'content')
@@ -153,7 +168,7 @@ async function runBuildEnd(plugin: ReturnType<typeof cloudflareAISearchSync>, ro
   hooks.configResolved({
     base,
     envDir: root,
-    logger: { info },
+    logger: { info, warn },
     mode: 'test',
     root,
   } as never)

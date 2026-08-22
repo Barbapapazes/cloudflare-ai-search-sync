@@ -1,5 +1,5 @@
 export { getCloudflareClient } from './client.js'
-export { assertCredential, isSyncEnabled, resolveCredentials } from './credentials.js'
+export { isSyncEnabled } from './credentials.js'
 export { ensureItemMetadata } from './metadata.js'
 export type { CloudflareAISearchCredentials } from './metadata.js'
 export type { CloudflareAISearchSyncOptions } from './options.js'

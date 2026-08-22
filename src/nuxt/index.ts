@@ -3,7 +3,7 @@ import type { SyncItem } from '../sync.js'
 import type { NuxtContentSyncNuxt, NuxtContentSyncOptions } from './types.js'
 import process from 'node:process'
 import { defineNuxtModule } from '@nuxt/kit'
-import { isSyncEnabled, resolveCredentials } from '../credentials.js'
+import { isSyncEnabled, resolveCredentialsOrWarn } from '../credentials.js'
 import { synchronizeItems } from '../synchronize.js'
 import { toNuxtContentItem } from './utils.js'
 
@@ -36,6 +36,10 @@ export function registerNuxtContentSync(
   if (nuxt.options.dev || !isSyncEnabled(options, process.env))
     return
 
+  const credentials = resolveCredentialsOrWarn(options, process.env, nuxt.logger)
+  if (!credentials)
+    return
+
   const items: SyncItem[] = []
   nuxt.hook('content:file:afterParse', (context) => {
     if (!context)
@@ -46,7 +50,6 @@ export function registerNuxtContentSync(
       items.push(item)
   })
   nuxt.hook('modules:done', async () => {
-    const credentials = resolveCredentials(options, process.env)
     await synchronizeItems(credentials, items, nuxt.logger)
   })
 }

@@ -85,6 +85,20 @@ describe('registerNuxtContentSync', () => {
     expect(hook).toHaveBeenCalledTimes(2)
   })
 
+  it('warns and does not register hooks when enabled without credentials', () => {
+    vi.stubEnv('CLOUDFLARE_ACCOUNT_ID', '')
+    const { nuxt, hook } = createNuxt(false)
+
+    registerNuxtContentSync({ enabled: true }, nuxt)
+
+    expect(nuxt.logger.warn).toHaveBeenCalledWith(
+      '[cloudflare-ai-search-sync] Missing Cloudflare AI Search accountId. Set the "accountId" plugin option or CLOUDFLARE_ACCOUNT_ID.',
+    )
+    expect(hook).not.toHaveBeenCalled()
+    expect(ensureItemMetadata).not.toHaveBeenCalled()
+    expect(syncItems).not.toHaveBeenCalled()
+  })
+
   it('synchronizes the completed production snapshot at modules:done', async () => {
     const { hooks, nuxt } = createNuxt(false)
     registerNuxtContentSync({ enabled: true }, nuxt)
@@ -122,7 +136,7 @@ function createNuxt(dev: boolean) {
   })
   const nuxt: NuxtContentSyncNuxt = {
     hook,
-    logger: { info: vi.fn() },
+    logger: { info: vi.fn(), warn: vi.fn() },
     options: { app: { baseURL: '/docs/' }, dev, rootDir: '/project' },
   }
 

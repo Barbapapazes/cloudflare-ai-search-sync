@@ -1,11 +1,11 @@
+import type { SiteConfig } from 'vitepress'
 import type { SyncItem } from '../sync.js'
-import type { VitePressSiteConfig } from './types.js'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { extractMarkdownMetadata } from '../markdown.js'
 import { siteRoot, toPublicUrl } from '../urls.js'
 
-export async function readVitePressPages(siteConfig: VitePressSiteConfig): Promise<SyncItem[]> {
+export async function readVitePressPages(siteConfig: SiteConfig): Promise<SyncItem[]> {
   const pages = siteConfig.pages.map((page) => {
     const route = siteConfig.rewrites.map[page] ?? page
     return {

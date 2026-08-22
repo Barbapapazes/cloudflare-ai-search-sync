@@ -3,6 +3,10 @@ import type { CloudflareAISearchSyncOptions } from './options.js'
 
 type Environment = Record<string, string | undefined>
 
+interface WarningLogger {
+  warn: (message: string) => void
+}
+
 const enabledEnvironmentVariable = 'CLOUDFLARE_AI_SEARCH_SYNC_ENABLED'
 
 export function isSyncEnabled(
@@ -12,31 +16,36 @@ export function isSyncEnabled(
   return options.enabled ?? environment[enabledEnvironmentVariable]?.trim().toLowerCase() === 'true'
 }
 
-export function resolveCredentials(
+export function resolveCredentialsOrWarn(
   options: CloudflareAISearchSyncOptions,
   environment: Environment,
-): CloudflareAISearchCredentials {
+  logger: WarningLogger,
+): CloudflareAISearchCredentials | undefined {
   const accountId = options.accountId ?? environment.CLOUDFLARE_ACCOUNT_ID
-  const apiToken = options.apiToken ?? environment.CLOUDFLARE_API_TOKEN
-  const instanceId = options.instanceId ?? environment.CLOUDFLARE_AI_SEARCH_INSTANCE_ID
-  const namespace = options.namespace ?? environment.CLOUDFLARE_AI_SEARCH_NAMESPACE
+  if (!accountId?.trim())
+    return warnMissingCredential(logger, 'accountId', 'CLOUDFLARE_ACCOUNT_ID')
 
-  assertCredential('accountId', 'CLOUDFLARE_ACCOUNT_ID', accountId)
-  assertCredential('apiToken', 'CLOUDFLARE_API_TOKEN', apiToken)
-  assertCredential('instanceId', 'CLOUDFLARE_AI_SEARCH_INSTANCE_ID', instanceId)
-  assertCredential('namespace', 'CLOUDFLARE_AI_SEARCH_NAMESPACE', namespace)
+  const apiToken = options.apiToken ?? environment.CLOUDFLARE_API_TOKEN
+  if (!apiToken?.trim())
+    return warnMissingCredential(logger, 'apiToken', 'CLOUDFLARE_API_TOKEN')
+
+  const instanceId = options.instanceId ?? environment.CLOUDFLARE_AI_SEARCH_INSTANCE_ID
+  if (!instanceId?.trim())
+    return warnMissingCredential(logger, 'instanceId', 'CLOUDFLARE_AI_SEARCH_INSTANCE_ID')
+
+  const namespace = options.namespace ?? environment.CLOUDFLARE_AI_SEARCH_NAMESPACE
+  if (!namespace?.trim())
+    return warnMissingCredential(logger, 'namespace', 'CLOUDFLARE_AI_SEARCH_NAMESPACE')
 
   return { accountId, apiToken, instanceId, namespace }
 }
 
-export function assertCredential(
+function warnMissingCredential(
+  logger: WarningLogger,
   optionName: keyof CloudflareAISearchSyncOptions,
   environmentName: string,
-  value: string | undefined,
-): asserts value is string {
-  if (!value?.trim()) {
-    throw new Error(
-      `Missing Cloudflare AI Search ${optionName}. Set the "${optionName}" plugin option or ${environmentName}.`,
-    )
-  }
+): undefined {
+  logger.warn(
+    `[cloudflare-ai-search-sync] Missing Cloudflare AI Search ${optionName}. Set the "${optionName}" plugin option or ${environmentName}.`,
+  )
 }

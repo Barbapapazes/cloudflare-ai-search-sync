@@ -25,7 +25,10 @@ export interface NuxtContentSyncOptions extends CloudflareAISearchSyncOptions {}
 
 export interface NuxtContentSyncNuxt {
   hook: (name: string, handler: (context?: NuxtContentAfterParseContext) => void | Promise<void>) => void
-  logger: { info: (message: string) => void }
+  logger: {
+    info: (message: string) => void
+    warn: (message: string) => void
+  }
   options: {
     app: { baseURL: string }
     dev: boolean
