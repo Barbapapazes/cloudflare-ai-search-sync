@@ -1,17 +1,17 @@
+import type { FileAfterParseHook } from '@nuxt/content'
 import type { SyncItem } from '../sync.js'
-import type { NuxtContentAfterParseContext } from './types.js'
 import { extname, relative, sep } from 'node:path'
 import { extractMarkdownMetadata } from '../markdown.js'
 
 export function toNuxtContentItem(
-  context: NuxtContentAfterParseContext,
+  context: FileAfterParseHook,
   rootDir: string,
   baseURL: string,
 ): SyncItem | undefined {
   if (!isPublishedMarkdownPage(context))
     return
 
-  const route = context.content.path
+  const route = context.content.path as string | undefined
   if (!route)
     return
 
@@ -28,11 +28,9 @@ export function toNuxtContentItem(
   }
 }
 
-export function isPublishedMarkdownPage(context: NuxtContentAfterParseContext): boolean {
+export function isPublishedMarkdownPage(context: FileAfterParseHook): boolean {
   return context.collection?.type === 'page'
     && (context.file.extension === '.md' || context.content.extension === '.md' || extname(context.file.path) === '.md')
-    && context.content.draft !== true
-    && context.content.meta?.draft !== true
 }
 
 export function withBaseURL(route: string, baseURL: string): string {
