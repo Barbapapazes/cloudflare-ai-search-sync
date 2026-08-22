@@ -30,6 +30,7 @@ describe('syncItems', () => {
     await syncItems(credentials, [{
       content: '# Current',
       description: 'The current page.',
+      icon: 'page',
       key: 'current.md',
       title: 'Current',
       url: '/current.html',
@@ -42,7 +43,7 @@ describe('syncItems', () => {
     })
     expect(upload).toHaveBeenCalledOnce()
     const [, parameters] = upload.mock.calls[0]
-    expect(parameters.file.metadata).toBe('{"description":"The current page.","title":"Current","url":"/current.html"}')
+    expect(parameters.file.metadata).toBe('{"description":"The current page.","icon":"page","title":"Current","url":"/current.html"}')
     expect(parameters.file.wait_for_completion).toBe(false)
     expect(parameters.file.file.name).toBe('current.md')
     expect(await parameters.file.file.text()).toBe('# Current')
@@ -71,6 +72,7 @@ describe('syncItems', () => {
       syncItems(credentials, [{
         content: '# Current',
         description: 'The current page.',
+        icon: 'page',
         key: 'current.md',
         title: 'Current',
         url: '/current.html',
@@ -97,6 +99,7 @@ describe('syncItems', () => {
     await syncItems(credentials, [{
       content: '# Markdown examples',
       description: 'Examples of Markdown.',
+      icon: 'section',
       key: 'guides/markdown-examples.md',
       title: 'Markdown examples',
       url: '/guides/markdown-examples.html',
@@ -104,7 +107,7 @@ describe('syncItems', () => {
 
     expect(upload).toHaveBeenCalledOnce()
     expect(upload.mock.calls[0][1].file.file.name).toBe('guides/markdown-examples.md')
-    expect(upload.mock.calls[0][1].file.metadata).toBe('{"description":"Examples of Markdown.","title":"Markdown examples","url":"/guides/markdown-examples.html"}')
+    expect(upload.mock.calls[0][1].file.metadata).toBe('{"description":"Examples of Markdown.","icon":"section","title":"Markdown examples","url":"/guides/markdown-examples.html"}')
     expect(createOrUpdate).not.toHaveBeenCalled()
     expect(remove).not.toHaveBeenCalled()
   })
@@ -119,8 +122,8 @@ describe('syncItems', () => {
     useClient(client)
 
     await expect(syncItems(credentials, [
-      { content: 'one', description: 'One.', key: 'duplicate.md', title: 'One', url: '/duplicate.html' },
-      { content: 'two', description: 'Two.', key: 'duplicate.md', title: 'Two', url: '/other.html' },
+      { content: 'one', description: 'One.', icon: 'page', key: 'duplicate.md', title: 'One', url: '/duplicate.html' },
+      { content: 'two', description: 'Two.', icon: 'page', key: 'duplicate.md', title: 'Two', url: '/other.html' },
     ])).rejects.toThrow('occurs more than once')
 
     expect(client.list).not.toHaveBeenCalled()
@@ -159,6 +162,7 @@ describe('syncItems', () => {
     await expect(syncItems(credentials, [{
       content: '# Current',
       description: 'The current page.',
+      icon: 'page',
       key: 'current.md',
       title: 'Current',
       url: 'current.html',
@@ -180,6 +184,7 @@ describe('syncItems', () => {
     await expect(syncItems(credentials, [{
       content: '# Current',
       description: '',
+      icon: 'page',
       key: 'current.md',
       title: 'Current',
       url: '/current.html',
@@ -188,6 +193,28 @@ describe('syncItems', () => {
     expect(client.list).not.toHaveBeenCalled()
     expect(client.upload).not.toHaveBeenCalled()
     expect(client.delete).not.toHaveBeenCalled()
+  })
+
+  it('rejects icons that do not identify a page or section', async () => {
+    const client = {
+      createOrUpdate: vi.fn(),
+      delete: vi.fn(),
+      list: vi.fn(),
+      upload: vi.fn(),
+    }
+    useClient(client)
+
+    await expect(syncItems(credentials, [{
+      content: '# Current',
+      description: 'The current page.',
+      icon: 'article' as never,
+      key: 'current.md',
+      title: 'Current',
+      url: '/current.html',
+    }])).rejects.toThrow('icon must be "page" or "section"')
+
+    expect(client.list).not.toHaveBeenCalled()
+    expect(client.upload).not.toHaveBeenCalled()
   })
 })
 

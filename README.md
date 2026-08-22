@@ -40,6 +40,7 @@ const credentials = resolveCredentials(options, process.env)
 const items: SyncItem[] = pages.map(page => ({
   content: page.markdown,
   description: page.description,
+  icon: 'page',
   key: page.path,
   title: page.title,
   url: toPublicUrl(page.path, '/docs/'),
@@ -125,7 +126,9 @@ The AI Search snippet displays `item.metadata.title` and `item.metadata.descript
 
 The adapters are authoritative over the AI Search `builtin` source: they upload every item in the completed Markdown snapshot and delete every built-in item absent from it. This includes manually uploaded built-in items. An empty Markdown folder is therefore authoritative and deletes all built-in items.
 
-Each production build uploads pages under their Markdown filename and path—such as `guide/page.md`—to prevent filename collisions. It writes the resolved, slash-prefixed URL to `item.metadata.url`, plus a non-empty title and description. The filesystem and VitePress adapters prefer Markdown frontmatter (`title` and `description`), then use the first heading and paragraph. Nuxt Content uses its parsed title and description when available and otherwise follows the same Markdown rules. The VitePress adapter excludes the site-root URL (`/`, or the configured `base`); the filesystem and Nuxt Content adapters include their root `index.md`.
+Each production build uploads pages under their Markdown filename and path—such as `guide/page.md`—to prevent filename collisions. It writes the resolved, slash-prefixed URL to `item.metadata.url`, plus a non-empty title and description. The filesystem and VitePress adapters prefer Markdown frontmatter (`title` and `description`), then use the first heading and paragraph for missing text. Nuxt Content prefers its parsed metadata and otherwise follows the same Markdown rules. The VitePress adapter excludes the site-root URL (`/`, or the configured `base`); the filesystem and Nuxt Content adapters include their root `index.md`.
+
+The `icon` metadata identifies the uploaded content shape. The built-in adapters upload complete documents and set it to `page`. Custom integrations that split a document into section items must set it to `section`. These values expose the `result-icon-page` and `result-icon-section` Shadow Parts in the AI Search snippet.
 
 Cloudflare AI Search detects unchanged content for the same key and skips reindexing it. Uploads complete before stale items are deleted, so an upload failure cannot remove existing content.
 

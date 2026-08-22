@@ -82,7 +82,14 @@ describe('cloudflareAISearchSync', () => {
 
     expect(ensureItemMetadata).toHaveBeenCalledOnce()
     expect(await uploadedItems()).toEqual([
-      { content: '# Guide', description: 'Guide', key: 'guide.md', title: 'Guide', url: '/guide.html' },
+      {
+        content: '# Guide',
+        description: 'Guide',
+        icon: 'page',
+        key: 'guide.md',
+        title: 'Guide',
+        url: '/guide.html',
+      },
     ])
   })
 
@@ -104,10 +111,10 @@ describe('cloudflareAISearchSync', () => {
     expect(loadEnv).toHaveBeenCalledWith('test', root, '')
     expect(ensureItemMetadata).toHaveBeenCalledOnce()
     expect(await uploadedItems()).toEqual([
-      { content: '# About', description: 'About', key: 'about.md', title: 'About', url: '/docs/about.html' },
-      { content: '# Guide', description: 'Guide', key: 'guide/index.md', title: 'Guide', url: '/docs/guide/' },
-      { content: '# Intro', description: 'Intro', key: 'guide/intro.md', title: 'Intro', url: '/docs/guide/intro.html' },
-      { content: '# Home', description: 'Home', key: 'index.md', title: 'Home', url: '/docs/' },
+      { content: '# About', description: 'About', icon: 'page', key: 'about.md', title: 'About', url: '/docs/about.html' },
+      { content: '# Guide', description: 'Guide', icon: 'page', key: 'guide/index.md', title: 'Guide', url: '/docs/guide/' },
+      { content: '# Intro', description: 'Intro', icon: 'page', key: 'guide/intro.md', title: 'Intro', url: '/docs/guide/intro.html' },
+      { content: '# Home', description: 'Home', icon: 'page', key: 'index.md', title: 'Home', url: '/docs/' },
     ])
   })
 
@@ -125,7 +132,7 @@ describe('cloudflareAISearchSync', () => {
     await runBuildEnd(plugin, root, '/docs/')
 
     expect(await uploadedItems()).toEqual([
-      { content: '# Guide', description: 'Guide', key: 'guide.md', title: 'Guide', url: '/search/guide' },
+      { content: '# Guide', description: 'Guide', icon: 'page', key: 'guide.md', title: 'Guide', url: '/search/guide' },
     ])
   })
 
@@ -169,7 +176,7 @@ async function createTemporaryDirectory(): Promise<string> {
   return directory
 }
 
-async function uploadedItems(): Promise<Array<{ content: string, description: string, key: string, title: string, url: string }>> {
+async function uploadedItems(): Promise<Array<{ content: string, description: string, icon: 'page' | 'section', key: string, title: string, url: string }>> {
   return Promise.all(client.upload.mock.calls.map(async ([, parameters]) => ({
     content: await parameters.file.file.text(),
     key: parameters.file.file.name,

@@ -21,6 +21,7 @@ export function toNuxtContentItem(
   return {
     content: context.file.body,
     description: stringValue(context.content.description) ?? metadata.description,
+    icon: 'page',
     key,
     title: stringValue(context.content.title) ?? metadata.title,
     url: withBaseURL(route, baseURL),

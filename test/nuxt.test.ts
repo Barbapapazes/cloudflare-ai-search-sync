@@ -26,6 +26,7 @@ describe('nuxt Content snapshot items', () => {
     }), '/project', '/docs/')).toEqual({
       content: '# Intro',
       description: 'Intro',
+      icon: 'page',
       key: 'content/guide/intro.md',
       title: 'Intro',
       url: '/docs/guide/intro',
@@ -106,6 +107,7 @@ describe('registerNuxtContentSync', () => {
     expect(syncItems).toHaveBeenCalledWith(credentials, [{
       content: '# Guide',
       description: 'Guide',
+      icon: 'page',
       key: 'content/guide.md',
       title: 'Guide',
       url: '/docs/guide',

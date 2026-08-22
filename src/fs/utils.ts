@@ -16,6 +16,7 @@ export async function readMarkdownFiles(
     const content = await readFile(filePath, 'utf8')
     return {
       content,
+      icon: 'page',
       key,
       ...extractMarkdownMetadata(content, key),
       url: toPublicUrl(key, base, cleanUrls),

@@ -18,6 +18,7 @@ export async function readVitePressPages(siteConfig: VitePressSiteConfig): Promi
     const content = await readFile(resolve(siteConfig.srcDir, page), 'utf8')
     return {
       content,
+      icon: 'page',
       key: page,
       ...extractMarkdownMetadata(content, page),
       url,

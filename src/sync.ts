@@ -5,9 +5,12 @@ import { getCloudflareClient } from './client.js'
 const maxFileSize = 4 * 1024 * 1024
 const maxKeyLength = 128
 
+export type SyncItemIcon = 'page' | 'section'
+
 export interface SyncItem {
   content: string
   description: string
+  icon: SyncItemIcon
   url: string
   key: string
   metadata?: Record<string, unknown>
@@ -38,6 +41,7 @@ export async function syncItems(
           metadata: JSON.stringify({
             ...item.metadata,
             description: item.description,
+            icon: item.icon,
             title: item.title,
             url: item.url,
           }),
@@ -90,6 +94,9 @@ function validateSnapshot(items: Iterable<SyncItem>): SyncItem[] {
     }
     if (typeof item.description !== 'string' || !item.description.trim()) {
       throw new Error(`AI Search item "${item.key}" description must not be empty.`)
+    }
+    if (item.icon !== 'page' && item.icon !== 'section') {
+      throw new Error(`AI Search item "${item.key}" icon must be "page" or "section".`)
     }
     if (item.key.length > maxKeyLength) {
       throw new Error(`AI Search item key "${item.key}" exceeds the ${maxKeyLength}-character limit.`)
