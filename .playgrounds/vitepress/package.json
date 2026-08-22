@@ -9,7 +9,7 @@
     "preview": "vitepress preview ."
   },
   "dependencies": {
-    "vitepress": "next"
+    "vitepress": "2.0.0-alpha.19"
   },
   "devDependencies": {
     "cloudflare-ai-search-sync": "workspace:*",

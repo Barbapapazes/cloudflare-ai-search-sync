@@ -6,7 +6,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [
     markdown({}),
-    vue(),
+    vue({ include: [/\.vue$/, /\.md$/] }),
     cloudflareAISearchSync({
       cleanUrls: true,
       folder: './src/pages',

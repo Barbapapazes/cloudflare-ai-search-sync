@@ -24,6 +24,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
+      - run: pnpm --dir .playgrounds/vite-vue-markdown run build
+      - run: pnpm --dir .playgrounds/nuxt-content run build
+      - run: pnpm --dir .playgrounds/vitepress run build
 
   typecheck:
     runs-on: ubuntu-latest

@@ -30,6 +30,8 @@ export function toNuxtContentItem(
 
 export function isPublishedMarkdownPage(context: FileAfterParseHook): boolean {
   return context.collection?.type === 'page'
+    && context.content.draft !== true
+    && !isDraftMetadata(context.content.meta)
     && (context.file.extension === '.md' || context.content.extension === '.md' || extname(context.file.path) === '.md')
 }
 
@@ -45,4 +47,8 @@ function toPosixPath(path: string): string {
 
 function stringValue(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
+function isDraftMetadata(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && 'draft' in value && value.draft === true
 }
