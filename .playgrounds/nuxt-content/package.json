@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@nuxt/content": "^3.15.2",
-    "better-sqlite3": "^12.11.1",
+    "better-sqlite3": "^13.0.3",
     "cloudflare-ai-search-sync": "workspace:*",
     "nuxt": "^4.5.0"
   }

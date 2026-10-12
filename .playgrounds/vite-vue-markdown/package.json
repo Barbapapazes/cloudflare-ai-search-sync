@@ -14,9 +14,9 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",
     "cloudflare-ai-search-sync": "workspace:*",
-    "unplugin-vue-markdown": "^29.0.0",
+    "unplugin-vue-markdown": "^32.1.1",
     "vite": "^8.2.1",
     "vue": "^3.5.0",
-    "vue-router": "^4.6.0"
+    "vue-router": "^5.3.1"
   }
 }
