@@ -9,11 +9,11 @@
     "preview": "vitepress preview ."
   },
   "dependencies": {
-    "vitepress": "2.0.0-alpha.19"
+    "vitepress": "2.0.0-alpha.20"
   },
   "devDependencies": {
     "cloudflare-ai-search-sync": "workspace:*",
-    "vite": "^8.2.1",
-    "vitepress-plugin-cloudflare-ai-search": "^0.0.3"
+    "vite": "^8.3.2",
+    "vitepress-plugin-cloudflare-ai-search": "^0.1.0"
   }
 }

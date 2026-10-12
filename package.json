@@ -2,7 +2,7 @@
   "name": "cloudflare-ai-search-sync",
   "type": "module",
   "version": "0.2.0",
-  "packageManager": "pnpm@11.21.0",
+  "packageManager": "pnpm@11.28.4",
   "description": "Synchronize Markdown files to Cloudflare AI Search automatically.",
   "author": "Estéban Soubiran <esteban@soubiran.dev>",
   "license": "MIT",
@@ -62,25 +62,25 @@
   "peerDependencies": {
     "@nuxt/content": ">=3.15.2 <4",
     "nuxt": ">=4.1.0 <5",
-    "vite": ">=5.0.0",
-    "vitepress": "^2.0.0-0"
+    "vite": ">=5.4.21",
+    "vitepress": "^2.0.0-alpha.20"
   },
   "dependencies": {
     "@nuxt/kit": "^4.5.2",
-    "cloudflare": "^7.0.0"
+    "cloudflare": "^7.3.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.3.0",
-    "@tsconfig/node24": "^24.0.4",
-    "@types/node": "^24.13.3",
-    "bumpp": "^12.2.0",
-    "changelogithub": "^15.0.4",
-    "eslint": "^10.8.1",
-    "taze": "^20.0.0",
-    "tsdown": "^0.22.14",
+    "@antfu/eslint-config": "^9.5.1",
+    "@tsconfig/node24": "^24.0.5",
+    "@types/node": "^24.19.1",
+    "bumpp": "^12.3.0",
+    "changelogithub": "^15.0.5",
+    "eslint": "^10.12.0",
+    "taze": "^20.0.2",
+    "tsdown": "^0.23.0",
     "typescript": "~6.0.3",
-    "vite": "^8.2.1",
-    "vitepress": "2.0.0-alpha.19",
-    "vitest": "^4.1.10"
+    "vite": "^8.3.2",
+    "vitepress": "2.0.0-alpha.20",
+    "vitest": "^4.1.11"
   }
 }

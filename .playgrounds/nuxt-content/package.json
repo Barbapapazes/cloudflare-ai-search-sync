@@ -10,12 +10,12 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
-    "vitepress": "2.0.0-alpha.19"
+    "vitepress": "2.0.0-alpha.20"
   },
   "devDependencies": {
-    "@nuxt/content": "^3.15.2",
+    "@nuxt/content": "^3.16.1",
     "better-sqlite3": "^12.11.1",
     "cloudflare-ai-search-sync": "workspace:*",
-    "nuxt": "^4.5.0"
+    "nuxt": "^4.5.2"
   }
 }
